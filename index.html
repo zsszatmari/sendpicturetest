@@ -1,0 +1,61 @@
+<! DOCTYPE html>
+<html>
+<head>
+	<title>getPicture() test</title>
+</head>
+<div>
+	<div>
+		<img id="resultImage">
+	</div>
+	<div id="resultText"></div>
+	<div id="resultTextUpload"></div>
+</div>
+<div>
+	<button id="getPictureButton" type="button">Get Picture</button>
+</div>
+<script>
+	const button = document.querySelector('#getPictureButton')
+	const image = document.querySelector('#resultImage');
+	const resultText = document.querySelector('#resultText');
+	const resultTextUpload = document.querySelector('#resultTextUpload');
+
+
+	button.onclick = ()=>{
+		resultTextUpload.innerHTML = "";
+
+		if (window.FieldFXMobile && window.FieldFXMobile.getPicture) {
+			resultText.innerHTML = "requesting picture";
+
+		    window.FieldFXMobile.getPicture().catch(function(){
+		        resultText.innerHTML = 'file selection cancelled';
+		    }).then((file)=>{
+		        resultText.innerHTML = `filename: ${file.name}, size: ${file.size}`;
+		        // to use the image for an <img> tag
+		        resultImage.src = URL.createObjectURL(file);
+
+		        // you might want to access binary data, use file.arrayBuffer(), see https://developer.mozilla.org/en-US/docs/Web/API/Blob/arrayBuffer
+		        // or you might want to upload via fetch() api, for example:
+		        const formData = new FormData();
+		        formData.append('file', file);
+		        const options = {
+		        	method: "POST",
+		        	body: formData,
+		        	credentials: 'include'
+		        };
+
+		     
+		        // of course this only makes sense if there is someone on the other side 
+		        // to accept data but you get the idea
+		        return fetch("sendimage", options)
+		        	.then(()=>{
+				    	resultTextUpload.innerHTML = 'successfully uploaded via HTTP POST';
+				    }).catch(()=>{
+				    	resultTextUpload.innerHTML = 'HTTP POST failed';
+				    });
+			});
+		} else {
+			resultText.innerHTML = "not running in FieldFX mobile app";
+		}
+	};
+</script>
+</html>
